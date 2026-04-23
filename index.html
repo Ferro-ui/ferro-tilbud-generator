@@ -9,41 +9,276 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; }
-  h1 { font-size: 18px; font-weight: 500; margin-bottom: 20px; }
-  label { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
-  input, textarea, select {
-    width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px;
-    font-size: 14px; font-family: inherit; background: #fff; color: #1a1a18;
-    outline: none; transition: border 0.15s;
+
+  :root {
+    --navy: #1B3055;
+    --navy-light: #244070;
+    --blue: #3A7DC9;
+    --blue-light: #5B9FE0;
+    --bg: #F0F3F8;
+    --card: #ffffff;
+    --border: #D5DEF0;
+    --text: #1a2030;
+    --muted: #6B7B9A;
+    --accent-bg: #EAF1FA;
   }
-  input:focus, textarea:focus { border-color: #888; }
-  textarea { resize: vertical; line-height: 1.5; }
-  button {
-    padding: 7px 16px; border: 1px solid #ccc; border-radius: 6px;
-    background: transparent; cursor: pointer; font-size: 13px; font-family: inherit;
-    transition: background 0.1s;
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
   }
-  button:hover { background: #ececea; }
-  button.active { background: #ececea; font-weight: 500; border-color: #aaa; }
-  .card { background: #fff; border: 1px solid #e2e2e0; border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; }
-  .grid2 { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+
+  /* ── Header ── */
+  .header {
+    background: var(--navy);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+  .logo-text { line-height: 1.1; }
+  .logo-text strong {
+    display: block;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .logo-text span {
+    display: block;
+    color: rgba(255,255,255,0.55);
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+  }
+  .header-title {
+    margin-left: 24px;
+    padding-left: 24px;
+    border-left: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.75);
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 16px 48px;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 3px;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--muted);
+    font-weight: 500;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { background: var(--accent-bg); color: var(--navy); }
+  .tab-btn.active {
+    background: var(--navy);
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(27,48,85,0.25);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* ── Form elements ── */
   .row { margin-bottom: 14px; }
-  .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
-  .summary { background: #f5f5f3; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 5px;
+    letter-spacing: 0.2px;
+  }
+  input, textarea, select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    transition: border 0.15s, box-shadow 0.15s;
+  }
+  input:focus, textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(58,125,201,0.12);
+  }
+  textarea { resize: vertical; line-height: 1.55; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+
+  /* ── Summary box ── */
+  .summary {
+    background: var(--accent-bg);
+    border: 1px solid #C5D8F0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
   .summary table { width: 100%; font-size: 14px; border-collapse: collapse; }
-  .summary td { padding: 3px 0; }
-  .summary td:last-child { text-align: right; font-weight: 500; }
-  pre { font-family: monospace; font-size: 12px; line-height: 1.6; background: #f5f5f3;
-        border: 1px solid #e2e2e0; border-radius: 8px; padding: 16px; white-space: pre-wrap;
-        word-break: break-word; max-height: 500px; overflow-y: auto; }
-  .copy-btn { display: block; margin-left: auto; margin-bottom: 10px; }
-  .hint { font-size: 12px; color: #888; margin-bottom: 12px; }
-  @media (max-width: 500px) { .grid2 { grid-template-columns: 1fr; } }
+  .summary td { padding: 4px 0; color: var(--muted); }
+  .summary td:last-child { text-align: right; font-weight: 600; color: var(--text); }
+  .summary tr:last-child td { color: var(--navy); font-size: 15px; }
+
+  /* ── Hint ── */
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: var(--accent-bg);
+    border-radius: 7px;
+    border-left: 3px solid var(--blue);
+  }
+
+  /* ── Preview / pre ── */
+  pre {
+    font-family: "SF Mono", "Fira Mono", monospace;
+    font-size: 12px;
+    line-height: 1.65;
+    background: #F7F9FC;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 520px;
+    overflow-y: auto;
+    color: #2a3545;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 7px;
+    border: none;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .btn-primary {
+    background: var(--navy);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--navy-light); }
+  .btn-success {
+    background: #1e7e4b;
+    color: #fff;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { background: var(--accent-bg); }
+  .preview-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Section divider ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 20px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  @media (max-width: 500px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .tab-btn { font-size: 12px; padding: 8px 6px; }
+  }
 </style>
 </head>
 <body>
+
+<header class="header">
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="6" fill="#2A4A80"/>
+      <path d="M9 8h18v4H13v4h12v4H13v8H9V8z" fill="white"/>
+      <rect x="9" y="24" width="18" height="4" rx="1" fill="#5B9FE0" opacity="0.7"/>
+    </svg>
+    <div class="logo-text">
+      <strong>FERRO</strong>
+      <span>Stålentreprenør</span>
+    </div>
+  </div>
+  <div class="header-title">Tilbudsbrev Generator</div>
+</header>
+
 <div id="root"></div>
+
 <script type="text/babel">
 const { useState } = React;
 
@@ -52,29 +287,28 @@ const fmt = n => {
   return v.toLocaleString("nb-NO") + ",-";
 };
 const fmtExact = n => Math.round(n).toLocaleString("nb-NO") + ",-";
-
 const today = () => new Date().toISOString().slice(0, 10);
 const fmtDate = s => { if (!s) return ""; const [y,m,d] = s.split("-"); return `${d}.${m}.${y}`; };
 
 const SCOPE_ITEMS = [
-  { key: "bygget", label: "Bygget", def: "" },
-  { key: "grunn", label: "Grunnarbeid", def: "Grunnarbeid er ikke medregnet, og graver må gjøre klart for isolering og støp. Forutsetter at graver legger strøm, vann og avløp inn til innsiden av byggets yttervegg. Frostisolering utvendig må ivaretas av grave firma." },
-  { key: "betong", label: "Betongarbeid", def: "Betongarbeid er ikke medregnet." },
-  { key: "staal", label: "Stål", def: "Stålkonstruksjon leveres ferdig dimensjonert med boltegruppe og sveiseplate. Stålet leveres med RAL 7000 C2L, industrikvalitet, forbehandlingsklasse P1.\n\nForutsetninger for dimensjoneringer:\n- NS-EN 1990, NS-EN 1991 (del 1-1, 1-2, 1-3, 1-4), NS-EN 1993 (del 1-1, 1-8, 1-10), NS-EN 1090-2:2008\n- Det forutsettes at taket er stiv skive\n- Ingen branndimensjonering eller beskyttelse\n- Søyler er ikke kontrollert for påkjørsel - jordskjelvberegninger er ikke medtatt\n- Stålet er slynget SA 2,5 og primet med jernoksyd - galvanisert og boltet" },
-  { key: "yttervegg", label: "Yttervegger", def: "" },
-  { key: "innervegg", label: "Innervegg", def: "Ingen innvendige vegger." },
-  { key: "himling", label: "Himling innvendig", def: "Synlig overflate er underside TRP-plater med Aluzink og korrosjonsklasse C3." },
-  { key: "gulv", label: "Overflater gulver", def: "Stålglattet betonggulv for gulv på grunn. Betongarbeid er ikke medregnet." },
-  { key: "trapper", label: "Trapper / Lås og beslag", def: "Ingen trapper medregnet. Ståldør leveres med standard håndtak, sylinder med nøkkellås og dørpumpe under 30 N." },
-  { key: "vinduer", label: "Vinduer og dører", def: "" },
-  { key: "porter", label: "Porter", def: "" },
-  { key: "tak", label: "Tak", def: "" },
-  { key: "inventar", label: "Inventar / Foliering / Screens / Rørlegger / Elektro", def: "Ikke medregnet." },
-  { key: "ventilasjon", label: "Ventilasjon", def: "Ventilasjon er ikke medregnet annet enn å klargjøre åpninger og beslag om dette blir aktuelt. Antar elektro leverer vifte." },
-  { key: "brann", label: "Branntetting/sikring", def: "Det er ikke medtatt brannisolering av bæresystem og det forutsettes R0 på stålet, men dette kan ikke fastsettes før det er utarbeidet en brannrapport." },
-  { key: "prosjektering", label: "Prosjektering / Arkitekt", def: "Ikke medregnet." },
-  { key: "mengder", label: "Mengder", def: "Mengder i tilbudet fra Ferro er gjeldende og reguleres før kontrakt i samråd med tiltakshaver." },
-  { key: "rigg", label: "Rigg og drift", def: "Det er medregnet rigg og drift for gjennomføring av arbeidene. Dette inkluderer transport av mannskap og utstyr, HMS-tiltak på byggeplass og nødvendig koordinering i byggeperioden." },
+  { key: "bygget",      label: "Bygget",                                          def: "" },
+  { key: "grunn",       label: "Grunnarbeid",                                     def: "Grunnarbeid er ikke medregnet, og graver må gjøre klart for isolering og støp. Forutsetter at graver legger strøm, vann og avløp inn til innsiden av byggets yttervegg. Frostisolering utvendig må ivaretas av grave firma." },
+  { key: "betong",      label: "Betongarbeid",                                    def: "Betongarbeid er ikke medregnet." },
+  { key: "staal",       label: "Stål",                                            def: "Stålkonstruksjon leveres ferdig dimensjonert med boltegruppe og sveiseplate. Stålet leveres med RAL 7000 C2L, industrikvalitet, forbehandlingsklasse P1.\n\nForutsetninger for dimensjoneringer:\n- NS-EN 1990, NS-EN 1991 (del 1-1, 1-2, 1-3, 1-4), NS-EN 1993 (del 1-1, 1-8, 1-10), NS-EN 1090-2:2008\n- Det forutsettes at taket er stiv skive\n- Ingen branndimensjonering eller beskyttelse\n- Søyler er ikke kontrollert for påkjørsel - jordskjelvberegninger er ikke medtatt\n- Stålet er slynget SA 2,5 og primet med jernoksyd - galvanisert og boltet" },
+  { key: "yttervegg",   label: "Yttervegger",                                     def: "" },
+  { key: "innervegg",   label: "Innervegg",                                       def: "Ingen innvendige vegger." },
+  { key: "himling",     label: "Himling innvendig",                               def: "Synlig overflate er underside TRP-plater med Aluzink og korrosjonsklasse C3." },
+  { key: "gulv",        label: "Overflater gulver",                               def: "Stålglattet betonggulv for gulv på grunn. Betongarbeid er ikke medregnet." },
+  { key: "trapper",     label: "Trapper / Lås og beslag",                         def: "Ingen trapper medregnet. Ståldør leveres med standard håndtak, sylinder med nøkkellås og dørpumpe under 30 N." },
+  { key: "vinduer",     label: "Vinduer og dører",                                def: "" },
+  { key: "porter",      label: "Porter",                                          def: "" },
+  { key: "tak",         label: "Tak",                                             def: "" },
+  { key: "inventar",    label: "Inventar / Foliering / Screens / Rørlegger / Elektro", def: "Ikke medregnet." },
+  { key: "ventilasjon", label: "Ventilasjon",                                     def: "Ventilasjon er ikke medregnet annet enn å klargjøre åpninger og beslag om dette blir aktuelt. Antar elektro leverer vifte." },
+  { key: "brann",       label: "Branntetting / sikring",                          def: "Det er ikke medtatt brannisolering av bæresystem og det forutsettes R0 på stålet, men dette kan ikke fastsettes før det er utarbeidet en brannrapport." },
+  { key: "prosjektering", label: "Prosjektering / Arkitekt",                     def: "Ikke medregnet." },
+  { key: "mengder",     label: "Mengder",                                         def: "Mengder i tilbudet fra Ferro er gjeldende og reguleres før kontrakt i samråd med tiltakshaver." },
+  { key: "rigg",        label: "Rigg og drift",                                   def: "Det er medregnet rigg og drift for gjennomføring av arbeidene. Dette inkluderer transport av mannskap og utstyr, HMS-tiltak på byggeplass og nødvendig koordinering i byggeperioden." },
 ];
 
 const FORUTSETNINGER = `Tiltakshaver står selv for:
@@ -104,19 +338,19 @@ Generelle betingelser:
 - Ryddet ut etter eget arbeid - ikke vasket. Offentlig vann/avløp og strømtilførsel til byggegrop er med i pris.`;
 
 function App() {
-  const [tab, setTab] = useState("info");
+  const [tab, setTab]   = useState("info");
   const [info, setInfo] = useState({ prosjekt:"", kunde:"", kontakt:"", adresse:"", postnr:"", sted:"", dato: today() });
   const [pris, setPris] = useState({ sumEks:"", opsjoner:"" });
   const [scope, setScope] = useState(() => { const s={}; SCOPE_ITEMS.forEach(i=>{ s[i.key]=i.def; }); return s; });
   const [copied, setCopied] = useState(false);
 
-  const sumEks = parseFloat(pris.sumEks.replace(/\s/g,"").replace(",",".")) || 0;
+  const sumEks  = parseFloat(pris.sumEks.replace(/\s/g,"").replace(",",".")) || 0;
   const sumEksR = Math.round(sumEks/1000)*1000;
-  const mva = Math.round(sumEksR*0.25);
-  const sumInk = sumEksR + mva;
-  const opsVal = parseFloat(pris.opsjoner.replace(/\s/g,"").replace(",",".")) || 0;
-  const opsMva = Math.round(opsVal*0.25);
-  const opsInk = opsVal + opsMva;
+  const mva     = Math.round(sumEksR*0.25);
+  const sumInk  = sumEksR + mva;
+  const opsVal  = parseFloat(pris.opsjoner.replace(/\s/g,"").replace(",",".")) || 0;
+  const opsMva  = Math.round(opsVal*0.25);
+  const opsInk  = opsVal + opsMva;
 
   const setI = k => e => setInfo(p=>({...p,[k]:e.target.value}));
 
@@ -126,7 +360,7 @@ function App() {
     L.push(`Dato: ${fmtDate(info.dato)}`);
     L.push(""); L.push("TILBUD TIL");
     L.push(info.kunde||"[Kunde]");
-    if(info.kontakt) L.push(`v/ ${info.kontakt}`);
+    if (info.kontakt) L.push(`v/ ${info.kontakt}`);
     L.push(info.adresse||"[Adresse]");
     L.push(`${info.postnr||"[Postnr]"} ${info.sted||"[Sted]"}`);
     L.push(""); L.push("PRISSAMMENDRAG");
@@ -144,9 +378,9 @@ function App() {
     L.push(""); L.push("─────────────────────────────────");
     L.push("ARBEIDSBESKRIVELSE"); L.push("─────────────────────────────────");
     SCOPE_ITEMS.forEach(item => {
-      if(scope[item.key]) { L.push(""); L.push(item.label.toUpperCase()); L.push(scope[item.key]); }
+      if (scope[item.key]) { L.push(""); L.push(item.label.toUpperCase()); L.push(scope[item.key]); }
     });
-    if(opsVal>0){
+    if (opsVal > 0) {
       L.push(""); L.push("OPSJONER (eks. mva)");
       L.push(`Sum opsjoner eks. mva:   ${fmtExact(opsVal)}`);
       L.push(`Mva (25 %):              ${fmtExact(opsMva)}`);
@@ -164,79 +398,94 @@ function App() {
   };
 
   const tabs = [
-    { id:"info", label:"Prosjektinfo" }, { id:"pris", label:"Pris" },
-    { id:"scope", label:"Omfang" }, { id:"preview", label:"Forhåndsvisning" }
+    { id:"info",    label:"Prosjektinfo" },
+    { id:"pris",    label:"Pris" },
+    { id:"scope",   label:"Omfang" },
+    { id:"preview", label:"Forhåndsvisning" },
   ];
 
   return (
-    <div style={{maxWidth:680, margin:"0 auto", padding:"24px 16px"}}>
-      <h1>Ferro – Tilbudsbrev Generator</h1>
+    <div className="layout">
       <div className="tabs">
-        {tabs.map(t=>(
-          <button key={t.id} className={tab===t.id?"active":""} onClick={()=>setTab(t.id)}>{t.label}</button>
+        {tabs.map(t => (
+          <button key={t.id} className={`tab-btn${tab===t.id?" active":""}`} onClick={()=>setTab(t.id)}>
+            {t.label}
+          </button>
         ))}
       </div>
 
       {tab==="info" && (
-        <div>
+        <div className="card">
+          <div className="card-title">Prosjektinformasjon</div>
           <div className="row"><label>Prosjektnavn</label><input value={info.prosjekt} onChange={setI("prosjekt")} placeholder="Lagerbygg Steinsholt"/></div>
-          <div className="row"><label>Kunde / firma</label><input value={info.kunde} onChange={setI("kunde")} placeholder="Reis AS"/></div>
+          <div className="section-label">Kunde</div>
+          <div className="row"><label>Firma</label><input value={info.kunde} onChange={setI("kunde")} placeholder="Reis AS"/></div>
           <div className="row"><label>Kontaktperson</label><input value={info.kontakt} onChange={setI("kontakt")} placeholder="Eskil Støvland"/></div>
           <div className="row"><label>Adresse</label><input value={info.adresse} onChange={setI("adresse")} placeholder="Hegdalringen 6B"/></div>
           <div className="grid2 row">
-            <div><label>Postnr</label><input value={info.postnr} onChange={setI("postnr")} placeholder="3261"/></div>
+            <div><label>Postnummer</label><input value={info.postnr} onChange={setI("postnr")} placeholder="3261"/></div>
             <div><label>Sted</label><input value={info.sted} onChange={setI("sted")} placeholder="Larvik"/></div>
           </div>
+          <div className="section-label">Dato</div>
           <div className="row"><label>Tilbudsdato</label><input type="date" style={{width:180}} value={info.dato} onChange={setI("dato")}/></div>
         </div>
       )}
 
       {tab==="pris" && (
-        <div>
+        <div className="card">
+          <div className="card-title">Prissammendrag</div>
           <div className="row">
             <label>Sum eks. mva (kr) — råtall fra kalkulasjon</label>
             <input style={{width:220}} value={pris.sumEks} onChange={e=>setPris(p=>({...p,sumEks:e.target.value}))} placeholder="1234567"/>
           </div>
-          {sumEksR>0 && (
-            <div className="summary"><table>
-              <tbody>
-                <tr><td style={{color:"#666"}}>Sum uten opsjoner eks. mva</td><td>{fmt(sumEksR)}</td></tr>
-                <tr><td style={{color:"#666"}}>Mva (25 %)</td><td>{fmtExact(mva)}</td></tr>
+          {sumEksR > 0 && (
+            <div className="summary">
+              <table><tbody>
+                <tr><td>Sum uten opsjoner eks. mva</td><td>{fmt(sumEksR)}</td></tr>
+                <tr><td>Mva (25 %)</td><td>{fmtExact(mva)}</td></tr>
                 <tr><td><strong>Sum ink. mva</strong></td><td><strong>{fmtExact(sumInk)}</strong></td></tr>
-              </tbody>
-            </table></div>
+              </tbody></table>
+            </div>
           )}
+          <div className="section-label">Opsjoner</div>
           <div className="row">
             <label>Opsjoner eks. mva (kr) — la stå tomt om ingen</label>
             <input style={{width:220}} value={pris.opsjoner} onChange={e=>setPris(p=>({...p,opsjoner:e.target.value}))} placeholder="51100"/>
           </div>
-          {opsVal>0 && (
-            <div className="summary"><table>
-              <tbody>
-                <tr><td style={{color:"#666"}}>Sum opsjoner eks. mva</td><td>{fmtExact(opsVal)}</td></tr>
-                <tr><td style={{color:"#666"}}>Mva (25 %)</td><td>{fmtExact(opsMva)}</td></tr>
+          {opsVal > 0 && (
+            <div className="summary">
+              <table><tbody>
+                <tr><td>Sum opsjoner eks. mva</td><td>{fmtExact(opsVal)}</td></tr>
+                <tr><td>Mva (25 %)</td><td>{fmtExact(opsMva)}</td></tr>
                 <tr><td><strong>Sum opsjoner ink. mva</strong></td><td><strong>{fmtExact(opsInk)}</strong></td></tr>
-              </tbody>
-            </table></div>
+              </tbody></table>
+            </div>
           )}
         </div>
       )}
 
       {tab==="scope" && (
         <div>
-          <p className="hint">Tøm et felt for å utelate posten fra tilbudet.</p>
-          {SCOPE_ITEMS.map(item=>(
-            <div key={item.key} className="row">
-              <label>{item.label}</label>
-              <textarea style={{minHeight:70}} value={scope[item.key]} onChange={e=>setScope(p=>({...p,[item.key]:e.target.value}))}/>
-            </div>
-          ))}
+          <div className="hint">Tøm et felt for å utelate posten fra tilbudet.</div>
+          <div className="card">
+            <div className="card-title">Arbeidsbeskrivelse</div>
+            {SCOPE_ITEMS.map(item => (
+              <div key={item.key} className="row">
+                <label>{item.label}</label>
+                <textarea style={{minHeight:68}} value={scope[item.key]} onChange={e=>setScope(p=>({...p,[item.key]:e.target.value}))}/>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       {tab==="preview" && (
         <div>
-          <button className="copy-btn" onClick={handleCopy}>{copied?"Kopiert!":"Kopier tekst"}</button>
+          <div className="preview-actions">
+            <button className={`btn ${copied?"btn-success":"btn-primary"}`} onClick={handleCopy}>
+              {copied ? "✓ Kopiert!" : "Kopier tekst"}
+            </button>
+          </div>
           <pre>{genText()}</pre>
         </div>
       )}
