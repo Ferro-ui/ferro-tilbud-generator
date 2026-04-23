@@ -1,0 +1,25 @@
+# Environment
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Generated output files (date-stamped, e.g. Tilbud_Lager_2026-04-23.docx)
+Tilbud_*_20[0-9][0-9]-*.docx
+Tilbud_*_20[0-9][0-9]-*.html
+Tilbud_*_20[0-9][0-9]-*.json
+*_extracted.json
+*_prefilled.html
+
+# macOS
+.DS_Store
+
+# API keys / secrets
+*.key
+secrets.*

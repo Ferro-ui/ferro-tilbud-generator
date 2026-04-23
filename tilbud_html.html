@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ferro – Tilbudsbrev Generator</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; }
+  h1 { font-size: 18px; font-weight: 500; margin-bottom: 20px; }
+  label { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
+  input, textarea, select {
+    width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px;
+    font-size: 14px; font-family: inherit; background: #fff; color: #1a1a18;
+    outline: none; transition: border 0.15s;
+  }
+  input:focus, textarea:focus { border-color: #888; }
+  textarea { resize: vertical; line-height: 1.5; }
+  button {
+    padding: 7px 16px; border: 1px solid #ccc; border-radius: 6px;
+    background: transparent; cursor: pointer; font-size: 13px; font-family: inherit;
+    transition: background 0.1s;
+  }
+  button:hover { background: #ececea; }
+  button.active { background: #ececea; font-weight: 500; border-color: #aaa; }
+  .card { background: #fff; border: 1px solid #e2e2e0; border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+  .row { margin-bottom: 14px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .summary { background: #f5f5f3; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+  .summary table { width: 100%; font-size: 14px; border-collapse: collapse; }
+  .summary td { padding: 3px 0; }
+  .summary td:last-child { text-align: right; font-weight: 500; }
+  pre { font-family: monospace; font-size: 12px; line-height: 1.6; background: #f5f5f3;
+        border: 1px solid #e2e2e0; border-radius: 8px; padding: 16px; white-space: pre-wrap;
+        word-break: break-word; max-height: 500px; overflow-y: auto; }
+  .copy-btn { display: block; margin-left: auto; margin-bottom: 10px; }
+  .hint { font-size: 12px; color: #888; margin-bottom: 12px; }
+  @media (max-width: 500px) { .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const fmt = n => {
+  const v = Math.round(n / 1000) * 1000;
+  return v.toLocaleString("nb-NO") + ",-";
+};
+const fmtExact = n => Math.round(n).toLocaleString("nb-NO") + ",-";
+
+const today = () => new Date().toISOString().slice(0, 10);
+const fmtDate = s => { if (!s) return ""; const [y,m,d] = s.split("-"); return `${d}.${m}.${y}`; };
+
+const SCOPE_ITEMS = [
+  { key: "bygget", label: "Bygget", def: "" },
+  { key: "grunn", label: "Grunnarbeid", def: "Grunnarbeid er ikke medregnet, og graver må gjøre klart for isolering og støp. Forutsetter at graver legger strøm, vann og avløp inn til innsiden av byggets yttervegg. Frostisolering utvendig må ivaretas av grave firma." },
+  { key: "betong", label: "Betongarbeid", def: "Betongarbeid er ikke medregnet." },
+  { key: "staal", label: "Stål", def: "Stålkonstruksjon leveres ferdig dimensjonert med boltegruppe og sveiseplate. Stålet leveres med RAL 7000 C2L, industrikvalitet, forbehandlingsklasse P1.\n\nForutsetninger for dimensjoneringer:\n- NS-EN 1990, NS-EN 1991 (del 1-1, 1-2, 1-3, 1-4), NS-EN 1993 (del 1-1, 1-8, 1-10), NS-EN 1090-2:2008\n- Det forutsettes at taket er stiv skive\n- Ingen branndimensjonering eller beskyttelse\n- Søyler er ikke kontrollert for påkjørsel - jordskjelvberegninger er ikke medtatt\n- Stålet er slynget SA 2,5 og primet med jernoksyd - galvanisert og boltet" },
+  { key: "yttervegg", label: "Yttervegger", def: "" },
+  { key: "innervegg", label: "Innervegg", def: "Ingen innvendige vegger." },
+  { key: "himling", label: "Himling innvendig", def: "Synlig overflate er underside TRP-plater med Aluzink og korrosjonsklasse C3." },
+  { key: "gulv", label: "Overflater gulver", def: "Stålglattet betonggulv for gulv på grunn. Betongarbeid er ikke medregnet." },
+  { key: "trapper", label: "Trapper / Lås og beslag", def: "Ingen trapper medregnet. Ståldør leveres med standard håndtak, sylinder med nøkkellås og dørpumpe under 30 N." },
+  { key: "vinduer", label: "Vinduer og dører", def: "" },
+  { key: "porter", label: "Porter", def: "" },
+  { key: "tak", label: "Tak", def: "" },
+  { key: "inventar", label: "Inventar / Foliering / Screens / Rørlegger / Elektro", def: "Ikke medregnet." },
+  { key: "ventilasjon", label: "Ventilasjon", def: "Ventilasjon er ikke medregnet annet enn å klargjøre åpninger og beslag om dette blir aktuelt. Antar elektro leverer vifte." },
+  { key: "brann", label: "Branntetting/sikring", def: "Det er ikke medtatt brannisolering av bæresystem og det forutsettes R0 på stålet, men dette kan ikke fastsettes før det er utarbeidet en brannrapport." },
+  { key: "prosjektering", label: "Prosjektering / Arkitekt", def: "Ikke medregnet." },
+  { key: "mengder", label: "Mengder", def: "Mengder i tilbudet fra Ferro er gjeldende og reguleres før kontrakt i samråd med tiltakshaver." },
+  { key: "rigg", label: "Rigg og drift", def: "Det er medregnet rigg og drift for gjennomføring av arbeidene. Dette inkluderer transport av mannskap og utstyr, HMS-tiltak på byggeplass og nødvendig koordinering i byggeperioden." },
+];
+
+const FORUTSETNINGER = `Tiltakshaver står selv for:
+- Grunnarbeid og komprimering av byggetomt
+- Offentlige gebyrer og søknadskostnader
+- Fiber inn til bygning
+- Dokumentasjon av grunnforhold og uavhengig kontroll
+- Brannisolering - tilbys separat ved behov
+- Klimagass- og bygningsfysikkrapport - tilbys separat ved behov
+- All rivning og klargjøring av byggeplass
+- Oljeutskiller og tilknyttet rørarbeid
+- Trær, busker og inventar
+
+Generelle betingelser:
+- Ved tilleggsarbeid: 750,- pr. time for montør, 1 200,- pr. time for prosjektleder, 15 % materialpåslag.
+- Mengder gjeldende og reguleres før kontrakt i samråd med tiltakshaver.
+- Tilbudet skal skriftlig bestilles av kunde.
+- Medfølgende tegning på stålkonstruksjon gjelder for pris. Det forutsettes kontinuerlig montasje.
+- Prisene er basert på anbudsdagens materialpriser og lønninger med vanlig adgang til forhåndsmessig prisjustering.
+- Fundamentering dimensjonert for monteringslaster. Setninger fra ferdigstilt grunnarbeid er ikke Ferro sitt ansvar.
+- Tiltakshaver sørger for fremkommelig vei rundt bygget - minimum 4 m bredde for kran og transport.
+- Tilbudet er gyldig i 14 dager.
+- Tilbudet på stål er bygd på gårsdagens innkjøpspriser av stålprofiler. Verkene har varslet prisoppgang og holder kun prisene på dagsbasis. Vi forbeholder oss retten til gjennomgang og eventuell endring av innkjøpspriser ved kontrahering. Endringen gjelder kun stålprofil innkjøp.
+- Forutsetter tiltaksklasse 2. Seismikk utelates. Direkte fundamentering 250 kN/m² bruddgrense (fjell og sprengstein). Bygget forutsettes ikke pelet.
+- U-verdi tak 0,18 - U-verdi vegg 0,18 - U-verdi glass 1,2.
+- Tilbudet er gitt under en pågående krig i Ukraina - ansett som force majeure iht. NS 8417 pkt. 33 / NS 8415 pkt. 24. Fremdriftshindring som forårsakes av krigen gir krav på fristforlengelse og eventuelt tilleggsvederlag.
+- Ryddet ut etter eget arbeid - ikke vasket. Offentlig vann/avløp og strømtilførsel til byggegrop er med i pris.`;
+
+function App() {
+  const [tab, setTab] = useState("info");
+  const [info, setInfo] = useState({ prosjekt:"", kunde:"", kontakt:"", adresse:"", postnr:"", sted:"", dato: today() });
+  const [pris, setPris] = useState({ sumEks:"", opsjoner:"" });
+  const [scope, setScope] = useState(() => { const s={}; SCOPE_ITEMS.forEach(i=>{ s[i.key]=i.def; }); return s; });
+  const [copied, setCopied] = useState(false);
+
+  const sumEks = parseFloat(pris.sumEks.replace(/\s/g,"").replace(",",".")) || 0;
+  const sumEksR = Math.round(sumEks/1000)*1000;
+  const mva = Math.round(sumEksR*0.25);
+  const sumInk = sumEksR + mva;
+  const opsVal = parseFloat(pris.opsjoner.replace(/\s/g,"").replace(",",".")) || 0;
+  const opsMva = Math.round(opsVal*0.25);
+  const opsInk = opsVal + opsMva;
+
+  const setI = k => e => setInfo(p=>({...p,[k]:e.target.value}));
+
+  const genText = () => {
+    const L = [];
+    L.push(`PRISTILBUD – ${info.prosjekt||"[Prosjektnavn]"}`);
+    L.push(`Dato: ${fmtDate(info.dato)}`);
+    L.push(""); L.push("TILBUD TIL");
+    L.push(info.kunde||"[Kunde]");
+    if(info.kontakt) L.push(`v/ ${info.kontakt}`);
+    L.push(info.adresse||"[Adresse]");
+    L.push(`${info.postnr||"[Postnr]"} ${info.sted||"[Sted]"}`);
+    L.push(""); L.push("PRISSAMMENDRAG");
+    L.push(`Sum uten opsjoner eks. mva   ${sumEksR ? fmt(sumEksR) : "000 000,-"}`);
+    L.push(`Mva (25 %)                   ${sumEksR ? fmtExact(mva) : "000 000,-"}`);
+    L.push(`Sum ink. mva                 ${sumEksR ? fmtExact(sumInk) : "000 000,-"}`);
+    L.push(`Gyldig i 14 dager fra ${fmtDate(info.dato)}`);
+    L.push("");
+    L.push("Vi takker for deres forespørsel og har gleden av å tilby dere følgende:");
+    L.push("I vedleggene ligger vår beskrivelse av arbeidet. Vi håper tilbudet er tilfredsstillende og at deres ønsker har blitt ivaretatt. Håper dere aksepterer tilbudet og tar kontakt ved spørsmål.");
+    L.push(""); L.push("Med vennlig hilsen");
+    L.push("Vegard Landsdal");
+    L.push("Daglig leder, Ferro Stålentreprenør AS");
+    L.push("vegard@ferrostal.no  •  Tlf: 95 83 71 23");
+    L.push(""); L.push("─────────────────────────────────");
+    L.push("ARBEIDSBESKRIVELSE"); L.push("─────────────────────────────────");
+    SCOPE_ITEMS.forEach(item => {
+      if(scope[item.key]) { L.push(""); L.push(item.label.toUpperCase()); L.push(scope[item.key]); }
+    });
+    if(opsVal>0){
+      L.push(""); L.push("OPSJONER (eks. mva)");
+      L.push(`Sum opsjoner eks. mva:   ${fmtExact(opsVal)}`);
+      L.push(`Mva (25 %):              ${fmtExact(opsMva)}`);
+      L.push(`Sum opsjoner ink. mva:   ${fmtExact(opsInk)}`);
+    }
+    L.push(""); L.push("─────────────────────────────────");
+    L.push("GENERELLE FORUTSETNINGER"); L.push("─────────────────────────────────");
+    L.push(FORUTSETNINGER);
+    L.push(""); L.push("Ferro Stålentreprenør AS  •  Ringsevja 3, 3830 Ulefoss  •  Tlf: 95 83 71 23");
+    return L.join("\n");
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(genText()).then(()=>{ setCopied(true); setTimeout(()=>setCopied(false),2000); });
+  };
+
+  const tabs = [
+    { id:"info", label:"Prosjektinfo" }, { id:"pris", label:"Pris" },
+    { id:"scope", label:"Omfang" }, { id:"preview", label:"Forhåndsvisning" }
+  ];
+
+  return (
+    <div style={{maxWidth:680, margin:"0 auto", padding:"24px 16px"}}>
+      <h1>Ferro – Tilbudsbrev Generator</h1>
+      <div className="tabs">
+        {tabs.map(t=>(
+          <button key={t.id} className={tab===t.id?"active":""} onClick={()=>setTab(t.id)}>{t.label}</button>
+        ))}
+      </div>
+
+      {tab==="info" && (
+        <div>
+          <div className="row"><label>Prosjektnavn</label><input value={info.prosjekt} onChange={setI("prosjekt")} placeholder="Lagerbygg Steinsholt"/></div>
+          <div className="row"><label>Kunde / firma</label><input value={info.kunde} onChange={setI("kunde")} placeholder="Reis AS"/></div>
+          <div className="row"><label>Kontaktperson</label><input value={info.kontakt} onChange={setI("kontakt")} placeholder="Eskil Støvland"/></div>
+          <div className="row"><label>Adresse</label><input value={info.adresse} onChange={setI("adresse")} placeholder="Hegdalringen 6B"/></div>
+          <div className="grid2 row">
+            <div><label>Postnr</label><input value={info.postnr} onChange={setI("postnr")} placeholder="3261"/></div>
+            <div><label>Sted</label><input value={info.sted} onChange={setI("sted")} placeholder="Larvik"/></div>
+          </div>
+          <div className="row"><label>Tilbudsdato</label><input type="date" style={{width:180}} value={info.dato} onChange={setI("dato")}/></div>
+        </div>
+      )}
+
+      {tab==="pris" && (
+        <div>
+          <div className="row">
+            <label>Sum eks. mva (kr) — råtall fra kalkulasjon</label>
+            <input style={{width:220}} value={pris.sumEks} onChange={e=>setPris(p=>({...p,sumEks:e.target.value}))} placeholder="1234567"/>
+          </div>
+          {sumEksR>0 && (
+            <div className="summary"><table>
+              <tbody>
+                <tr><td style={{color:"#666"}}>Sum uten opsjoner eks. mva</td><td>{fmt(sumEksR)}</td></tr>
+                <tr><td style={{color:"#666"}}>Mva (25 %)</td><td>{fmtExact(mva)}</td></tr>
+                <tr><td><strong>Sum ink. mva</strong></td><td><strong>{fmtExact(sumInk)}</strong></td></tr>
+              </tbody>
+            </table></div>
+          )}
+          <div className="row">
+            <label>Opsjoner eks. mva (kr) — la stå tomt om ingen</label>
+            <input style={{width:220}} value={pris.opsjoner} onChange={e=>setPris(p=>({...p,opsjoner:e.target.value}))} placeholder="51100"/>
+          </div>
+          {opsVal>0 && (
+            <div className="summary"><table>
+              <tbody>
+                <tr><td style={{color:"#666"}}>Sum opsjoner eks. mva</td><td>{fmtExact(opsVal)}</td></tr>
+                <tr><td style={{color:"#666"}}>Mva (25 %)</td><td>{fmtExact(opsMva)}</td></tr>
+                <tr><td><strong>Sum opsjoner ink. mva</strong></td><td><strong>{fmtExact(opsInk)}</strong></td></tr>
+              </tbody>
+            </table></div>
+          )}
+        </div>
+      )}
+
+      {tab==="scope" && (
+        <div>
+          <p className="hint">Tøm et felt for å utelate posten fra tilbudet.</p>
+          {SCOPE_ITEMS.map(item=>(
+            <div key={item.key} className="row">
+              <label>{item.label}</label>
+              <textarea style={{minHeight:70}} value={scope[item.key]} onChange={e=>setScope(p=>({...p,[item.key]:e.target.value}))}/>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab==="preview" && (
+        <div>
+          <button className="copy-btn" onClick={handleCopy}>{copied?"Kopiert!":"Kopier tekst"}</button>
+          <pre>{genText()}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
