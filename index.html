@@ -19,7 +19,11 @@
     --muted: #6B7B9A; --accent-bg: #EAF1FA; --danger: #c0392b; --danger-light: #fadbd8;
   }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  .header { background: #fff; padding: 0 28px; display: flex; align-items: center; height: 64px; border-bottom: 3px solid var(--navy); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+  .header { background: #fff; padding: 0 28px; display: flex; align-items: center; height: 64px; border-bottom: 3px solid var(--navy); box-shadow: 0 2px 6px rgba(0,0,0,0.08); gap: 12px; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .api-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid; transition: opacity 0.15s; }
+  .api-badge.ok  { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+  .api-badge.missing { background: #fff3cd; border-color: #ffeeba; color: #856404; }
   .logo { display: flex; align-items: center; gap: 12px; }
   .logo img { height: 36px; }
   .header-title { margin-left: 24px; padding-left: 24px; border-left: 1px solid #D5DEF0; color: var(--muted); font-size: 13px; }
@@ -87,6 +91,7 @@
     <span style="font-size:15px;font-weight:700;color:var(--navy);letter-spacing:1px">FERRO</span>
   </div>
   <div class="header-title">Tilbudsbrev Generator</div>
+  <div class="header-right" id="headerRight"></div>
 </header>
 
 <div id="root"></div>
@@ -101,7 +106,8 @@ window.addEventListener('load', function() {
 </script>
 
 <script type="text/babel">
-const { useState, useCallback } = React;
+const { useState, useCallback, useEffect } = React;
+const { createPortal } = ReactDOM;
 
 function today() { return new Date().toISOString().slice(0, 10); }
 function fmtDate(s) { if (!s) return ''; const [y,m,d] = s.split('-'); return d+'.'+m+'.'+y; }
@@ -378,7 +384,21 @@ function App() {
     { id:'preview', label:'Forh\u00e5ndsvisning' },
   ];
 
+  const apiOk = apiKey && apiKey.length > 10;
+  const headerRight = document.getElementById('headerRight');
+
   return (
+    <>
+    {headerRight && createPortal(
+      <span
+        className={'api-badge ' + (apiOk ? 'ok' : 'missing')}
+        onClick={() => setTab('upload')}
+        title={apiOk ? 'API-n\u00f8kkel lagret' : 'Klikk for \u00e5 angi API-n\u00f8kkel'}
+      >
+        {apiOk ? '\u2713 API OK' : '\u26a0 API mangler'}
+      </span>,
+      headerRight
+    )}
     <div className="layout">
       <div className="tabs">
         {TABS.map(t => (
@@ -532,6 +552,7 @@ function App() {
         </div>
       )}
     </div>
+    </>
   );
 }
 
