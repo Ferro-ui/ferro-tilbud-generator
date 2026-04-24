@@ -213,7 +213,7 @@ function App() {
   const [pris, setPris] = useState({ sumEks:'', opsjoner:'' });
   const [scopeItems, setScopeItems] = useState(DEFAULT_SCOPE);
   const [opsList, setOpsList] = useState([]);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('ferro_api_key') || '');
   const [files, setFiles] = useState([]);
   const [status, setStatus] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -424,7 +424,7 @@ function App() {
             <div className="card-title">API-n&#248;kkel</div>
             <div className="row">
               <label>Anthropic API-n&#248;kkel (sk-ant-...)</label>
-              <input type="password" value={apiKey} onChange={e=>setApiKey(e.target.value)}
+              <input type="password" value={apiKey} onChange={e=>{setApiKey(e.target.value);localStorage.setItem('ferro_api_key',e.target.value);}}
                 placeholder="sk-ant-api03-..." autoComplete="off" />
             </div>
             <button className="btn btn-primary" onClick={processFiles} disabled={processing}>
